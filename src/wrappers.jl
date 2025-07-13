@@ -34,12 +34,12 @@ const prima_obj = Ptr{Cvoid}
 const prima_objcon = Ptr{Cvoid}
 
 function prima_bobyqa(calfun, n, x, f, xl, xu, nf, rhobeg, rhoend, ftarget, maxfun, npt,
-                      iprint)
+                      iprint, honour_x0)
     @ccall libprimac.prima_bobyqa(calfun::prima_obj, n::Cint, x::Ptr{Cdouble},
                                   f::Ptr{Cdouble}, xl::Ptr{Cdouble}, xu::Ptr{Cdouble},
                                   nf::Ptr{Cint}, rhobeg::Cdouble, rhoend::Cdouble,
-                                  ftarget::Cdouble, maxfun::Cint, npt::Cint,
-                                  iprint::Cint)::Status
+                                  ftarget::Cdouble, maxfun::Cint, npt::Cint, iprint::Cint,
+                                  honour_x0::Bool)::Status
 end
 
 function prima_newuoa(calfun, n, x, f, nf, rhobeg, rhoend, ftarget, maxfun, npt, iprint)

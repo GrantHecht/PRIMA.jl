@@ -344,6 +344,7 @@ function prima!(f, x::DenseVector{Cdouble};
                 maxfun::Integer = default_maxfun(x),
                 npt::Integer = default_npt(x),
                 iprint::Union{Integer,Message} = MSG_NONE,
+                honour_x0::Bool = true,
                 xl::Union{AbstractVector{<:Real},Nothing} = nothing,
                 xu::Union{AbstractVector{<:Real},Nothing} = nothing,
                 linear_ineq::Union{LinearConstraints,Nothing} = nothing,
@@ -362,7 +363,7 @@ function prima!(f, x::DenseVector{Cdouble};
     elseif xu !== nothing || xl !== nothing
         # BOBYQA is designed for bound constrained problems.
         return bobyqa!(f, x; scale, rhobeg, rhoend, iprint, ftarget, maxfun, npt,
-                       xl, xu)
+                       xl, xu, honour_x0)
     else
         # NEWUOA is more efficient than UOBYQA for unconstrained problems.
         return newuoa!(f, x; scale, rhobeg, rhoend, iprint, ftarget, maxfun, npt)
@@ -386,7 +387,8 @@ function bobyqa!(f, x::DenseVector{Cdouble};
                  ftarget::Real = -Inf,
                  maxfun::Integer = default_maxfun(x),
                  npt::Integer = default_npt(x),
-                 iprint::Union{Integer,Message} = MSG_NONE)
+                 iprint::Union{Integer,Message} = MSG_NONE,
+                 honour_x0::Bool = true)
     # Check arguments and get constraints.
     n = length(x) # number of variables
     _check_npt(npt, n)
@@ -405,7 +407,7 @@ function bobyqa!(f, x::DenseVector{Cdouble};
     fw = ObjFun(f, n, scl)   # wrapper to objective function
     fp = _objfun_ptr(bobyqa) # pointer to C-callable function
     status = task_local_storage(:objfun, fw) do
-        prima_bobyqa(fp, n, x, fx, xl, xu, nf, rhobeg, rhoend, ftarget, maxfun, npt, iprint)
+        prima_bobyqa(fp, n, x, fx, xl, xu, nf, rhobeg, rhoend, ftarget, maxfun, npt, iprint, honour_x0)
     end
     isempty(scl) || _scale!(x, *, scl)
     return Info(; fx = fx[], nf = nf[], status)
